@@ -1,0 +1,37 @@
+package config;
+
+import animal.Animal;
+import animal.Location;
+import field.Island;
+
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
+
+/**
+ * вспомогательный сервис для создания животных
+ */
+public class AnimalSpawner {
+    public void spawnInitial(Island island,SimulationConfig simulationConfig) {
+        Map<AnimalType,Integer> initialCounts = simulationConfig.getInitialCounts();
+        for (AnimalType type : AnimalType.values()) {
+            int count = initialCounts.getOrDefault(type,0); //сколько особей нужно создать
+            if (count <= 0) {continue;} // если для этого вида не нужно создавать, пропускаем
+
+            AnimalParams params = SimulationConfig.getAnimalsMap().get(type);
+            for (int i = 0; i < count; i++) {
+                Animal animal = AnimalFactory.create(type,params,simulationConfig,island);
+
+                //делаем случайные клетки
+                int x = ThreadLocalRandom.current().nextInt(island.getWIDTH());
+                int y = ThreadLocalRandom.current().nextInt(island.getHEIGHT());
+                Location location = island.getLocations()[x][y];
+
+                //сообщаем животному где оно
+                animal.setCurrentLocation(location);
+                location.getAnimals().add(animal); //кладем животное в клетку
+            }
+        }
+
+
+    }
+}

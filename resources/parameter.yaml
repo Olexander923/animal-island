@@ -1,0 +1,151 @@
+island:
+   width: 100
+   height: 20
+   cycleDurationOfSimulationMs: 1000
+
+animals:
+wolf:
+   weight: 50
+   maxNumberOfAnimalsPerCell: 30
+   speedMoving: 3
+   foodToSaturate: 8
+   cubsPerBirth: 3
+   diet: [HORSE,DEER,HARE,HAMSTER,GOAT,SHEEP,DUCK,BUFFALO]
+   initialCount: 10
+   initialCounts: 11
+
+boa:
+   weight: 15
+   maxNumberOfAnimalsPerCell: 30
+   speedMoving: 1
+   foodToSaturate: 3
+   cubsPerBirth: 2
+   diet: [FOX,HARE,HAMSTER,DUCK]
+   initialCount: 15
+
+fox:
+   weight: 8
+   maxNumberOfAnimalsPerCell: 30
+   speedMoving: 2
+   foodToSaturate: 2
+   cubsPerBirth: 3
+   diet: [HARE,HAMSTER,CATERPILLAR,DUCK]
+   initialCount: 25
+
+bear:
+  weight: 500
+  maxNumberOfAnimalsPerCell: 5
+  speedMoving: 2
+  foodToSaturate: 80
+  cubsPerBirth: 2
+  diet: [BOA,HORSE,DEER,HARE,HAMSTER,GOAT,SHEEP,DUCK]
+  initialCount: 9
+
+eagle:
+   weight: 6
+   maxNumberOfAnimalsPerCell: 20
+   speedMoving: 3
+   foodToSaturate: 1
+   cubsPerBirth: 5
+   diet: [FOX,HARE,HAMSTER,DUCK]
+   initialCount: 29
+
+horse:
+   weight: 400
+   maxNumberOfAnimalsPerCell: 20
+   speedMoving: 4
+   foodToSaturate: 60
+   cubsPerBirth: 1
+   diet: [PLANT]
+   initialCount: 50
+
+deer:
+     weight: 300
+     maxNumberOfAnimalsPerCell: 20
+     speedMoving: 4
+     foodToSaturate: 50
+     cubsPerBirth: 1
+     diet: [PLANT]
+     initialCount: 40
+
+
+hare:
+  double weight: 2
+  int maxNumberOfAnimalsPerCell: 150
+  int speedMoving: 2
+  double foodToSaturate: 0.45
+  cubsPerBirth: 3
+  diet: [PLANT]
+  initialCount: 55
+
+hamster:
+  double weight: 0.05
+  int maxNumberOfAnimalsPerCell: 500
+  int speedMoving: 1
+  double foodToSaturate: 0.01
+  cubsPerBirth: 4
+  diet: [PLANT,CATERPILLAR]
+  initialCount: 100
+
+goat:
+  double weight: 60
+  int maxNumberOfAnimalsPerCell: 140
+  int speedMoving: 3
+  double foodToSaturate: 10
+  cubsPerBirth: 2
+  diet: [PLANT]
+  initialCount: 61
+
+sheep:
+  double weight: 70
+  int maxNumberOfAnimalsPerCell: 140
+  int speedMoving: 3
+  double foodToSaturate: 15
+  cubsPerBirth: 2
+  diet: [PLANT]
+  initialCount: 70
+
+
+wildBoar:
+  double weight: 400
+  int maxNumberOfAnimalsPerCell: 50
+  int speedMoving: 2
+  double foodToSaturate: 50
+  cubsPerBirth: 2
+  diet: [HAMSTER,PLANT,CATERPILLAR]
+  initialCount: 30
+
+buffalo:
+  double weight: 700
+  int maxNumberOfAnimalsPerCell: 10
+  int speedMoving: 3
+  double foodToSaturate: 100
+  cubsPerBirth: 1
+  diet: [PLANT]
+  initialCount: 35
+
+duck:
+  double weight: 1
+  int maxNumberOfAnimalsPerCell: 200
+  int speedMoving: 4
+  double foodToSaturate: 0.15
+  cubsPerBirth: 5
+  diet: [PLANT,CATERPILLAR]
+  initialCount: 88
+
+caterpillar:
+  double weight: 0.01
+  int maxNumberOfAnimalsPerCell: 1000
+  int speedMoving: 0
+  double foodToSaturate: 0.0
+  cubsPerBirth:
+  diet: [PLANT]
+  initialCount: 100
+
+
+plants:
+  double weight: 0.01
+  int maxNumberOfAnimalsPerCell: 1000
+  int speedMoving: 0
+  double foodToSaturate: 0.0
+  initialCount: 120
