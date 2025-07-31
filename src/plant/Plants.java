@@ -29,10 +29,12 @@ public class Plants implements Eatable {
     /**
      * рост растительности
      */
-    public static void grow(Location location,int maxPlants){
+    public static void grow(Location location,int maxPlantsPerCell){
         int current = location.getPlants().size();
-        if(current < maxPlants) {
+        if(current < maxPlantsPerCell && maxPlantsPerCell > 0) {
             location.getPlants().add(new Plants(1.0));
+            System.out.println("New plant was grown in location: " + location.getX() + ", "
+            + location.getY());
         }
     }
 }

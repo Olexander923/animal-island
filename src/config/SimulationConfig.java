@@ -4,30 +4,41 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class SimulationConfig {
     private final  int islandWidth;//ширина острова
     private final  int islandHeight;//высота острова
     private final  Duration cycleDurationOfSimulationMs;//Длительность одного такта симуляции в миллисекундах.
-    private final  int numberOfIndividuals;//Стартовое количество особей каждого вида
+    //private final  int numberOfIndividuals;//Стартовое количество особей каждого вида
+    private int maxPlantsPerCell; //максимальное кол-во растений на клетку, будет читаться из yaml
+    private int initialPlantsCount;
     private final  boolean stopConditions;//Условие остановки (например, «все животные мертвы» или «прошло N тактов»).
-    private Map<AnimalType,Map<Edible,Double>> probabilityOfEating;//матрица вероятности добычи в %
-    public static Map<AnimalType,AnimalParams> animalsMap = new ConcurrentHashMap<>();
+    private final int maxTicks;//максимальное кол-во тактов, за которое происходят задачи(рост растений, цикл животных,статистика)
+    private Map<AnimalType,Map<Edible,Double>> probabilityOfEating = new ConcurrentHashMap<>();//матрица вероятности добычи в %
+    public static Map<AnimalType,AnimalParams> animalsMap = new ConcurrentHashMap<>(); //для хранения параметров животных
     private final Map<AnimalType,Integer> initialCounts = new ConcurrentHashMap<>();//мапа для подсчета создания необходимого количества животных
+    private  AtomicInteger tickCount = new AtomicInteger(0);//счетчик тактов
 
 
-    public SimulationConfig(int islandWidth, int islandHeight, Duration cycleDurationOfSimulationMs, int numberOfIndividuals, boolean stopConditions, Map<AnimalType,AnimalParams> probabilityOfEating) {
+    public SimulationConfig(int islandWidth,
+                            int islandHeight,
+                            Duration cycleDurationOfSimulationMs,
+                            boolean stopConditions,
+                            int maxTicks) {
         this.islandWidth = islandWidth;
         this.islandHeight = islandHeight;
         this.cycleDurationOfSimulationMs = cycleDurationOfSimulationMs;
-        this.numberOfIndividuals = numberOfIndividuals;
         this.stopConditions = stopConditions;
-        this.probabilityOfEating = new ConcurrentHashMap<>();
+        this.maxTicks = maxTicks;
+
     }
+
 
     /**
      * метод для чтения параметров из yaml в Map<String, Object> и получение значений
@@ -39,16 +50,29 @@ public class SimulationConfig {
         // YAML-парсер библиотеки SnakeYAML
         Yaml yaml = new Yaml();
         Map<String,Object> root = yaml.load(Files.newInputStream(yamlPath));
+        //временный вовод для дебага
+        System.out.println("Root keys: " + root.keySet());
+        System.out.println("Root content: " + root);
+        this.maxPlantsPerCell = (Integer) root.getOrDefault("maxPlantsPerCell",200);
+        this.initialPlantsCount = (Integer) root.getOrDefault("initialPlantsCount",120);
 
         Map<String,Map<String,Object>> animalsYaml = (Map<String,Map<String,Object>>) root.get("animals");
         for (Map.Entry<String,Map<String,Object>> e : animalsYaml.entrySet()) {
-            AnimalType type = AnimalType.valueOf(e.getKey().toUpperCase());
+            //проверка, если попадается растения, то ловим ошибку и пропускаем,т.е. она не входит в enum
+            String key = e.getKey().toUpperCase();
+            AnimalType type;
+            try {
+                type = AnimalType.valueOf(key);
+            } catch (IllegalArgumentException ex) {
+                continue;
+            }
             Map<String,Object> m = e.getValue();
             int initial = (Integer) m.getOrDefault("initialCount",0);
+
             initialCounts.put(type,initial);
             AnimalParams params = new AnimalParams(
                     ((Number) m.get("weight")).doubleValue(),
-                    (Integer) m.get("maxPerCell"),
+                    (Integer) m.get("maxNumberOfAnimalsPerCell"),
                     (Integer) m.get("speedMoving"),
                     ((Number) m.get("foodToSaturate")).doubleValue(),
                     ((Integer) m.get("cubsPerBirth")),
@@ -74,9 +98,8 @@ public class SimulationConfig {
         return cycleDurationOfSimulationMs;
     }
 
-    public int getNumberOfIndividuals() {
-        return numberOfIndividuals;
-    }
+
+    public int getMaxPlantsPerCell() {return maxPlantsPerCell;}
 
     public boolean isStopConditions() {
         return stopConditions;
@@ -94,4 +117,11 @@ public class SimulationConfig {
         return animalsMap;
     }
 
+    public int getMaxTicks() {
+        return maxTicks;
+    }
+
+    public AtomicInteger getTickCount() {
+        return tickCount;
+    }
 }

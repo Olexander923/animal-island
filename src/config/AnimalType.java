@@ -1,7 +1,6 @@
 package config;
 
-public enum AnimalType {//TODO заполнить enum с учетом наследования
-    PLANT,
+public enum AnimalType {
     CATERPILLAR,
     HORSE,
     DEER,

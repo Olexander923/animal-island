@@ -19,34 +19,39 @@ public abstract class Carnivore extends Animal {
     }
 
     @Override
-    public void eat() {
+    public synchronized void eat() {
         Set<Edible> diet = getDiet();
         //получаем клетку текущего нахождения орла
         Location eagleLocation = this.getCurrentLocation();
+        try {
 
-        //получаем список всех кого можно съесть
-        List<Eatable> candidates = new ArrayList<>();
-        candidates.addAll(eagleLocation.getPlants());
-        candidates.addAll(eagleLocation.getAnimals());
-        //оставляем только тех, кого можем съесть согласно данным
-        candidates.removeIf(c -> !diet.contains(c.getEdible()));
-        //проходимся по всем кандидатам, пока не найдется подходящий
-        for (Eatable candidate : candidates) {
-            double chance = EcosystemRules.getProbabilityOfEating(this.getType(), candidate.getEdible());
-            if (ThreadLocalRandom.current().nextDouble() < chance) {
-                //съедает
-                double foodWeight = candidate.getWeight();
-                double newSatiety = min(getSatiety() + foodWeight, this.getFoodToSaturate());
-                setSatiety(newSatiety);
-                candidate.removeFrom(eagleLocation);
-                //за один такт хватает одного куска — выходим
-                break;
+            //получаем список всех кого можно съесть
+            List<Eatable> candidates = new ArrayList<>();
+            candidates.addAll(eagleLocation.getPlants());
+            candidates.addAll(eagleLocation.getAnimals());
+            //оставляем только тех, кого можем съесть согласно данным
+            candidates.removeIf(c -> !diet.contains(c.getEdible()));
+            //проходимся по всем кандидатам, пока не найдется подходящий
+            for (Eatable candidate : candidates) {
+                double chance = EcosystemRules.getProbabilityOfEating(this.getType(), candidate.getEdible());
+                if (ThreadLocalRandom.current().nextDouble() < chance) {
+                    //съедает
+                    double foodWeight = candidate.getWeight();
+                    double newSatiety = min(getSatiety() + foodWeight, this.getFoodToSaturate());
+                    setSatiety(newSatiety);
+                    candidate.removeFrom(eagleLocation);
+                    //за один такт хватает одного куска — выходим
+                    break;
+                }
             }
+        } catch (IllegalStateException ex) {
+            System.err.println("Extraction was runaway");
         }
     }
 
     @Override
-    public void multiply() {
+    public synchronized void multiply() {
+        System.out.println("Animal " + this.getType() + " is multiplying...");
         //получаем текущее положение в клетке
         Location eagleLocation = this.getCurrentLocation();
 
@@ -97,7 +102,8 @@ public abstract class Carnivore extends Animal {
 
 
     @Override
-    public void chooseDirectionOfMovement() {
+    public synchronized void chooseDirectionOfMovement() {
+        System.out.println("Animal " + this.getType() + " is moving...");
         int speed = this.getSpeedMoving();//получаем скорость из текущего объекта
         //получаем текущее положение в клетке
         Location currentLocation = this.getCurrentLocation();

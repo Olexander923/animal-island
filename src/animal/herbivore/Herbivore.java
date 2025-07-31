@@ -24,15 +24,16 @@ public abstract class Herbivore extends Animal {
 
 
     @Override
-    public void eat() {
+    public synchronized void eat() {
+        System.out.println("Animal " + this.getType() + " is eating...");
         Set<Edible> diet = getDiet();
         //получаем клетку текущего нахождения орла
-        Location eagleLocation = this.getCurrentLocation();
+        Location herbivore = this.getCurrentLocation();
 
         //получаем список всех кого можно съесть
         List<Eatable> candidates = new ArrayList<>();
-        candidates.addAll(eagleLocation.getPlants());
-        candidates.addAll(eagleLocation.getAnimals());
+        candidates.addAll(herbivore.getPlants());
+        candidates.addAll(herbivore.getAnimals());
         //оставляем только тех, кого можем съесть согласно данным
         candidates.removeIf(c -> !diet.contains(c.getEdible()));
         //проходимся по всем кандидатам, пока не найдется подходящий
@@ -43,15 +44,17 @@ public abstract class Herbivore extends Animal {
                 double foodWeight = candidate.getWeight();
                 double newSatiety = min(getSatiety() + foodWeight,this.getFoodToSaturate());
                 setSatiety(newSatiety);
-                candidate.removeFrom(eagleLocation);
+                candidate.removeFrom(herbivore);
                 //за один такт хватает одного куска — выходим
                 break;
             }
         }
+
     }
 
     @Override
-    public void multiply() {
+    public synchronized void multiply() {
+        System.out.println("Animal " + this.getType() + " is multiplying...");
         //получаем текущее положение в клетке
         Location currentLocation = this.getCurrentLocation();
 
@@ -125,7 +128,8 @@ public abstract class Herbivore extends Animal {
 
 
     @Override
-    public void chooseDirectionOfMovement() {
+    public synchronized void chooseDirectionOfMovement() {
+        System.out.println("Animal " + this.getType() + " is moving...");
         int speed = this.getSpeedMoving();//получаем скорость из текущего объекта
         //получаем текущее положение в клетке
         Location currentLocation = this.getCurrentLocation();
@@ -158,6 +162,5 @@ public abstract class Herbivore extends Animal {
         }
 
     }
-
 
 }
