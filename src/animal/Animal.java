@@ -7,6 +7,7 @@ import config.SimulationConfig;
 import field.Island;
 
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 public abstract class Animal implements Eatable {
     private final SimulationConfig config;
@@ -32,10 +33,10 @@ public abstract class Animal implements Eatable {
         this.speedMoving = speedMoving;
         this.foodToSaturate = foodToSaturate;
         this.diet = diet;
-        this.satiety = 0;
+        //установил случайное значение сытости
+        this.satiety = ThreadLocalRandom.current().nextDouble(foodToSaturate*0.3,foodToSaturate*0.8);
         this.isAlive = true;
     }
-
 
     public abstract void eat();
     public abstract void multiply();
@@ -55,6 +56,14 @@ public abstract class Animal implements Eatable {
     public void removeFrom(Location location) {
        location.getAnimals().remove(this);
        this.isAlive = false;
+    }
+
+    /**
+     * метод для уменьшения сытости в каждом такте(-10% за такт)
+     */
+    public void decreaseSatiety(){
+        double newSatiety = getSatiety() - (getFoodToSaturate() * 0.1);
+        setSatiety(Math.max(newSatiety,0));
     }
 
     public int getMaxAnimalsPerCell() {

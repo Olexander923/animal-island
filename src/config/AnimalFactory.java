@@ -24,8 +24,8 @@ public class AnimalFactory {
 
             case EAGLE -> new Eagle(config,island,type,
                     params.getWeight(),
-                    params.getSpeedMoving(),
                     params.getMaxAnimalsPerCell(),
+                    params.getSpeedMoving(),
                     params.getFoodToSaturate(),
                     params.getDiet());
 

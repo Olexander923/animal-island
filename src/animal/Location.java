@@ -4,12 +4,13 @@ import plant.Plants;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Location {
     private final int x;
     private final int y;
-    private final Set<Animal> animals = new HashSet<>();
-    private final Set<Plants> plants = new HashSet<>();
+    private final Set<Animal> animals = ConcurrentHashMap.newKeySet();
+    private final Set<Plants> plants = ConcurrentHashMap.newKeySet();
     private boolean isWater;//является ли клетка водой
 
     public Location(int x, int y) {

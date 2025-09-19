@@ -27,7 +27,7 @@ public abstract class Herbivore extends Animal {
     public synchronized void eat() {
         System.out.println("Animal " + this.getType() + " is eating...");
         Set<Edible> diet = getDiet();
-        //получаем клетку текущего нахождения орла
+        //получаем клетку текущего нахождения травоядного
         Location herbivore = this.getCurrentLocation();
 
         //получаем список всех кого можно съесть
@@ -39,6 +39,8 @@ public abstract class Herbivore extends Animal {
         //проходимся по всем кандидатам, пока не найдется подходящий
         for (Eatable candidate : candidates) {
             double chance = EcosystemRules.getProbabilityOfEating(this.getType(), candidate.getEdible());
+            //todo , временный вывод для проверки вероятности поедания,удалить потом
+            System.out.println("Chance for " + this.getType() + " to eat " + candidate.getEdible() + ": " + chance);
             if (ThreadLocalRandom.current().nextDouble() < chance) {
                 //съедает
                 double foodWeight = candidate.getWeight();
@@ -62,12 +64,17 @@ public abstract class Herbivore extends Animal {
         List<Animal> multiplyCandidates = new ArrayList<>();
         multiplyCandidates.addAll(currentLocation.getAnimals());
 
-        //оставляем только тех, с кем можно размножаться согласно данным
-        multiplyCandidates.removeIf(c -> !c.getType().equals(this.getType()));
-        //проверка что есть хотя бы один партнер
-        if(multiplyCandidates.size() < 2) {
-            return;
-        }
+//        //оставляем только тех, с кем можно размножаться согласно данным
+//        multiplyCandidates.removeIf(c -> !c.getType().equals(this.getType()));
+//        //проверка что есть хотя бы один партнер
+//        if(multiplyCandidates.size() < 2) {
+//            return;
+//        }
+
+        long countOfPartners = getCurrentLocation().getAnimals().stream()
+                .filter(a -> a!=this && a.getType() == this.getType()).count();
+        if (countOfPartners > 1) return;
+
         // проверяем есть ли еще место в клетке для новых детенышей
         AnimalParams config = SimulationConfig.getAnimalsMap().get(this.getType());
         int cubsQuantity = config.getCubsPerBirth();

@@ -2,7 +2,7 @@ package config;
 
 import java.util.Set;
 
-public class AnimalParams { //TODO установить библиотку SnakeYAML/Jackson для YAML
+public class AnimalParams {
     private final double weight;//Вес одного животного
     private final int maxAnimalsPerCell;//Максимальное количество животных этого вида на одной клетке
     private final int speedMoving;//Скорость перемещения, не более чем, клеток за ход

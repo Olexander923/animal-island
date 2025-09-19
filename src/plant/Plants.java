@@ -37,4 +37,5 @@ public class Plants implements Eatable {
             + location.getY());
         }
     }
+
 }

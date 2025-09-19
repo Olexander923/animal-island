@@ -3,6 +3,7 @@ package config;
 import field.Island;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * матрица вероятностей добычи
@@ -18,7 +19,10 @@ public class EcosystemRules {
      * @return
      */
     public static double getProbabilityOfEating(AnimalType attacker, Edible prey) {
-        return probabilityOfEating.get(attacker).get(prey);
+        Map<Edible,Double> attackerChances = probabilityOfEating.get(attacker);
+        if (attackerChances == null){return 0.0;} //хищник не найден в матрице
+        Double chance = attackerChances.get(prey);
+        return chance != null ? chance : 0.0; // вернуть 0.0 если конкретная добыча не найдена
     }
 
     /**
@@ -41,5 +45,9 @@ public class EcosystemRules {
             }
         }
         return true;//все умерли, симулиция останавливается
+    }
+
+    public static void setProbabilityOfEating(Map<AnimalType, Map<Edible, Double>> probabilityOfEating) {
+        EcosystemRules.probabilityOfEating = probabilityOfEating;
     }
 }

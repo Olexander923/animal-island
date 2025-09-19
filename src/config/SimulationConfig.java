@@ -1,10 +1,12 @@
 package config;
 import org.yaml.snakeyaml.Yaml;
+
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,15 +51,17 @@ public class SimulationConfig {
         //читаем YAML-конфиг, достаем значения параметров из мапы для каждого животног
         // YAML-парсер библиотеки SnakeYAML
         Yaml yaml = new Yaml();
-        Map<String,Object> root = yaml.load(Files.newInputStream(yamlPath));
+        Map<String, Object> root = yaml.load(Files.newInputStream(yamlPath));
         //временный вовод для дебага
         System.out.println("Root keys: " + root.keySet());
         System.out.println("Root content: " + root);
-        this.maxPlantsPerCell = (Integer) root.getOrDefault("maxPlantsPerCell",200);
-        this.initialPlantsCount = (Integer) root.getOrDefault("initialPlantsCount",120);
 
-        Map<String,Map<String,Object>> animalsYaml = (Map<String,Map<String,Object>>) root.get("animals");
-        for (Map.Entry<String,Map<String,Object>> e : animalsYaml.entrySet()) {
+
+        this.maxPlantsPerCell = (Integer) root.getOrDefault("maxPlantsPerCell", 200);
+        this.initialPlantsCount = (Integer) root.getOrDefault("initialPlantsCount", 120);
+
+        Map<String, Map<String, Object>> animalsYaml = (Map<String, Map<String, Object>>) root.get("animals");
+        for (Map.Entry<String, Map<String, Object>> e : animalsYaml.entrySet()) {
             //проверка, если попадается растения, то ловим ошибку и пропускаем,т.е. она не входит в enum
             String key = e.getKey().toUpperCase();
             AnimalType type;
@@ -66,10 +70,10 @@ public class SimulationConfig {
             } catch (IllegalArgumentException ex) {
                 continue;
             }
-            Map<String,Object> m = e.getValue();
-            int initial = (Integer) m.getOrDefault("initialCount",0);
+            Map<String, Object> m = e.getValue();
+            int initial = (Integer) m.getOrDefault("initialCount", 0);
 
-            initialCounts.put(type,initial);
+            initialCounts.put(type, initial);
             AnimalParams params = new AnimalParams(
                     ((Number) m.get("weight")).doubleValue(),
                     (Integer) m.get("maxNumberOfAnimalsPerCell"),
@@ -82,9 +86,45 @@ public class SimulationConfig {
                             .map(Edible::valueOf)
                             .collect(Collectors.toSet())
             );
-            animalsMap.put(type,params);
+            animalsMap.put(type, params);
         }
-    }
+
+        //парсинг конфига для получения вероятности поедения
+        Map<String, Map<String, Double>> probabilityYaml = (Map<String, Map<String, Double>>) root.get("probabilityOfEating");
+        if (probabilityYaml != null) {
+            this.probabilityOfEating = new ConcurrentHashMap<>();
+
+            for (Map.Entry<String, Map<String, Double>> animalEntry : probabilityYaml.entrySet()) {
+                try {
+                    AnimalType animalType = AnimalType.valueOf(animalEntry.getKey().toUpperCase());
+                    Map<Edible, Double> edibleChances = new ConcurrentHashMap<>();
+
+                    for (Map.Entry<String, Double> edibleEntry : animalEntry.getValue().entrySet()) {
+                        try {
+                            Edible edible = Edible.valueOf(edibleEntry.getKey().toUpperCase());
+                            edibleChances.put(edible, edibleEntry.getValue());
+                        } catch (IllegalArgumentException e) {
+                            System.err.println("Unknown edible type in probability matrix: " + edibleEntry.getKey());
+                        }
+                    }
+                    this.probabilityOfEating.put(animalType, edibleChances);
+                } catch (IllegalArgumentException e) {
+                    System.err.println("Unknown animal type in probability matrix: " + animalEntry.getKey());
+                }
+            }
+
+            } else {
+                System.err.println("Warning: probabilityOfEating section not found in YAML config!");
+                this.probabilityOfEating = new ConcurrentHashMap<>();
+            }
+            // инициализируем EcosystemRules после загрузки всех данных
+            EcosystemRules.setProbabilityOfEating(this.probabilityOfEating);
+        }
+
+
+
+
+
 
     public int getIslandWidth() {
         return islandWidth;

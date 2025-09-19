@@ -17,5 +17,6 @@ public enum AnimalType {
     BEAR,
     EAGLE,
     COW,
-    KANGAROO
+    KANGAROO;
+
 }

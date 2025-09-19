@@ -29,11 +29,14 @@ public class StatisticsCollector {
             for (int y = 0; y < island.getHEIGHT(); y++) {
                 Set<Animal> animals = locations[x][y].getAnimals();
                 for (Animal animal : animals) {
-                    animalCount.merge(animal.getType(), 1, Integer::sum);
+                    if (animal.isAlive()) {
+                        animalCount.merge(animal.getType(), 1, Integer::sum);
+                    }
                 }
             }
+            System.out.println("Animal counts: " + animalCount);
+
         }
-        System.out.println("Animal counts: " + animalCount);
         return animalCount;
     }
 
