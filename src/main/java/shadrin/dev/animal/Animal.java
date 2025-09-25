@@ -1,4 +1,12 @@
-package shadrin.dev.herbivore;
+package shadrin.dev.animal;
+
+import shadrin.dev.config.AnimalType;
+import shadrin.dev.config.Edible;
+import shadrin.dev.config.SimulationConfig;
+import shadrin.dev.field.Island;
+
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 public abstract class Animal implements Eatable {
     private final SimulationConfig config;

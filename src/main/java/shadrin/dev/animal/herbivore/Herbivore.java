@@ -1,4 +1,4 @@
-package shadrin.dev.herbivore;
+package shadrin.dev.animal.herbivore;
 
 import shadrin.dev.animal.Animal;
 import shadrin.dev.animal.Eatable;

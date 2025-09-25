@@ -1,4 +1,10 @@
-package shadrin.dev.animal;
+package shadrin.dev.animal.carnivore;
+import shadrin.dev.config.AnimalType;
+import shadrin.dev.config.Edible;
+import shadrin.dev.config.SimulationConfig;
+import shadrin.dev.field.Island;
+
+import java.util.Set;
 
 public class Bear extends Carnivore {
     public Bear(SimulationConfig config, Island island, AnimalType type, double weight, int maxAnimalsPerCell, int speedMoving, double foodToSaturate, Set<Edible> diet) {

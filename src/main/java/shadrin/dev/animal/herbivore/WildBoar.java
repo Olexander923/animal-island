@@ -1,4 +1,4 @@
-package shadrin.dev.herbivore;
+package shadrin.dev.animal.herbivore;
 import shadrin.dev.config.AnimalType;
 import shadrin.dev.config.Edible;
 import shadrin.dev.field.Island;

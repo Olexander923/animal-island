@@ -1,4 +1,17 @@
-package shadrin.dev.animal;
+package shadrin.dev.animal.carnivore;
+
+import shadrin.dev.animal.Animal;
+import shadrin.dev.animal.Eatable;
+import shadrin.dev.animal.Location;
+import shadrin.dev.config.*;
+import shadrin.dev.field.Island;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+
+import static java.lang.Math.min;
 
 public abstract class Carnivore extends Animal {
     public Carnivore(SimulationConfig config, Island island, AnimalType type, double weight, int maxAnimalsPerCell, int speedMoving, double foodToSaturate, Set<Edible> diet) {
@@ -9,13 +22,13 @@ public abstract class Carnivore extends Animal {
     public synchronized void eat() {
         Set<Edible> diet = getDiet();
         //получаем клетку текущего нахождения орла
-        Location carnivore = this.getCurrentLocation();
+        Location currentLocation = this.getCurrentLocation();
         try {
 
             //получаем список всех кого можно съесть
             List<Eatable> candidates = new ArrayList<>();
-            candidates.addAll(carnivore.getPlants());
-            candidates.addAll(carnivore.getAnimals());
+            candidates.addAll(currentLocation.getPlants());
+            candidates.addAll(currentLocation.getAnimals());
             //оставляем только тех, кого можем съесть согласно данным
             candidates.removeIf(c -> !diet.contains(c.getEdible()));
             //проходимся по всем кандидатам, пока не найдется подходящий
@@ -28,7 +41,7 @@ public abstract class Carnivore extends Animal {
                     double foodWeight = candidate.getWeight();
                     double newSatiety = min(getSatiety() + foodWeight, this.getFoodToSaturate());
                     setSatiety(newSatiety);
-                    candidate.removeFrom(carnivore);
+                    candidate.removeFrom(currentLocation);
                     //за один такт хватает одного куска — выходим
                     break;
                 }

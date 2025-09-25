@@ -1,4 +1,21 @@
 package shadrin.dev.config;
 
-public class Edible {
+public enum Edible {
+    PLANT,
+    CATERPILLAR,
+    HORSE,
+    DEER,
+    HARE,
+    HAMSTER,
+    GOAT,
+    SHEEP,
+    FOX,
+    BOA,
+    BUFFALO,
+    WILD_BOAR,
+    DUCK,
+    BEAR,
+    EAGLE,
+    WOLF
+
 }
