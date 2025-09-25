@@ -1,9 +1,10 @@
-### IntelliJ IDEA ###
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
 
-### Eclipse ###
+### STS ###
 .apt_generated
 .classpath
 .factorypath
@@ -11,6 +12,17 @@ out/
 .settings
 .springBeans
 .sts4-cache
+
+### IntelliJ IDEA ###
+out/
+.idea
+*.iws
+*.iml
+*.ipr
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Eclipse ###
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
@@ -27,3 +39,9 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Build ###
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+.idea/
