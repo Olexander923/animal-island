@@ -85,7 +85,7 @@ public class SimulationConfig {
                             .map(Edible::valueOf)
                             .collect(Collectors.toSet())
             );
-            animalsMap.put(type, params);
+            animalsMap.put(type,params);
         }
 
         //парсинг конфига для получения вероятности поедения
@@ -119,11 +119,6 @@ public class SimulationConfig {
         // инициализируем EcosystemRules после загрузки всех данных
         EcosystemRules.setProbabilityOfEating(this.probabilityOfEating);
     }
-
-
-
-
-
 
     public int getIslandWidth() {
         return islandWidth;
@@ -163,4 +158,6 @@ public class SimulationConfig {
     public AtomicInteger getTickCount() {
         return tickCount;
     }
+
+
 }

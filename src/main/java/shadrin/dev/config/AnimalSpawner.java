@@ -1,7 +1,7 @@
 package shadrin.dev.config;
 
 import shadrin.dev.animal.Animal;
-import shadrin.dev.animal.Location;
+import shadrin.dev.field.Location;
 import shadrin.dev.field.Island;
 import shadrin.dev.plant.Plants;
 

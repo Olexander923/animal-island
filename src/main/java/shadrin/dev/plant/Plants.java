@@ -1,7 +1,7 @@
 package shadrin.dev.plant;
 
 import shadrin.dev.animal.Eatable;
-import shadrin.dev.animal.Location;
+import shadrin.dev.field.Location;
 import shadrin.dev.config.Edible;
 
 

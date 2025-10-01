@@ -2,7 +2,7 @@ package shadrin.dev.animal.carnivore;
 
 import shadrin.dev.animal.Animal;
 import shadrin.dev.animal.Eatable;
-import shadrin.dev.animal.Location;
+import shadrin.dev.field.Location;
 import shadrin.dev.config.*;
 import shadrin.dev.field.Island;
 
@@ -21,10 +21,9 @@ public abstract class Carnivore extends Animal {
     @Override
     public synchronized void eat() {
         Set<Edible> diet = getDiet();
-        //получаем клетку текущего нахождения орла
+        //получаем клетку текущего нахождения хищника
         Location currentLocation = this.getCurrentLocation();
         try {
-
             //получаем список всех кого можно съесть
             List<Eatable> candidates = new ArrayList<>();
             candidates.addAll(currentLocation.getPlants());
@@ -54,31 +53,29 @@ public abstract class Carnivore extends Animal {
     @Override
     public synchronized void multiply() {
         System.out.println("Animal " + this.getType() + " is multiplying...");
+
         //получаем текущее положение в клетке
-        Location eagleLocation = this.getCurrentLocation();
+        Location currentLocation = this.getCurrentLocation();
 
-        //получаем список всех видов животных в клетке
+        //получаем список всех кандитатов в клетке
         List<Animal> multiplyCandidates = new ArrayList<>();
-        multiplyCandidates.addAll(eagleLocation.getAnimals());
-
-//        //оставляем только тех, с кем можно размножаться согласно данным
-//        multiplyCandidates.removeIf(c -> !c.getType().equals(this.getType()));
-//        if (multiplyCandidates.size() >= 2) {
-//            return;
-//        }
+        multiplyCandidates.addAll(currentLocation.getAnimals());
 
         long countOfPartners = getCurrentLocation().getAnimals().stream()
                 .filter(a -> a!=this && a.getType() == this.getType()).count();
-        if (countOfPartners > 1) return;
+        if (countOfPartners < 1) return;
 
         // проверяем есть ли еще место в клетке для новых детенышей
         AnimalParams config = SimulationConfig.getAnimalsMap().get(this.getType());
         int cubsQuantity = config.getCubsPerBirth();
-        if (eagleLocation.getAnimals().size() + cubsQuantity > getMaxAnimalsPerCell()) {
+        int futureSize = currentLocation.getAnimals().size() + cubsQuantity;
+        if (futureSize > getMaxAnimalsPerCell()) {
+            System.out.println(">>> exit: no place");
             return; //места нет в клетке
         }
         //теперь проверка сытости для размножения
         if (getSatiety() < 0.5 * getFoodToSaturate()) {
+            System.out.println(">>> exit: too hungry");
             return;//слишком голодны для размножения
         }
         //создание детенышей
@@ -98,11 +95,12 @@ public abstract class Carnivore extends Animal {
 
                 default -> throw new IllegalStateException("Unexpected value: " + this.getType());
             };
-            eagleLocation.getAnimals().add(cub);
+            currentLocation.getAnimals().add(cub);
+        }
             //уменьшаем сытость родителя
             setSatiety(getSatiety() - 0.5 * getFoodToSaturate());
             System.out.println("Quantity carnivore cubs: " + cubsQuantity);
-        }
+
     }
 
 
@@ -143,6 +141,5 @@ public abstract class Carnivore extends Animal {
         }
 
     }
-
 
 }

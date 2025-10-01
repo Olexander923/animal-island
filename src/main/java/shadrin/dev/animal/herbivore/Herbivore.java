@@ -2,7 +2,7 @@ package shadrin.dev.animal.herbivore;
 
 import shadrin.dev.animal.Animal;
 import shadrin.dev.animal.Eatable;
-import shadrin.dev.animal.Location;
+import shadrin.dev.field.Location;
 import shadrin.dev.config.*;
 import shadrin.dev.field.Island;
 
@@ -59,13 +59,6 @@ public abstract class Herbivore extends Animal {
         //получаем список всех видов животных в клетке
         List<Animal> multiplyCandidates = new ArrayList<>();
         multiplyCandidates.addAll(currentLocation.getAnimals());
-
-//        //оставляем только тех, с кем можно размножаться согласно данным
-//        multiplyCandidates.removeIf(c -> !c.getType().equals(this.getType()));
-//        //проверка что есть хотя бы один партнер
-//        if(multiplyCandidates.size() < 2) {
-//            return;
-//        }
 
         long countOfPartners = getCurrentLocation().getAnimals().stream()
                 .filter(a -> a!=this && a.getType() == this.getType()).count();

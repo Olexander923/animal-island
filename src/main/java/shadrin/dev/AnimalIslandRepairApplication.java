@@ -3,7 +3,7 @@ package shadrin.dev;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import shadrin.dev.animal.Animal;
-import shadrin.dev.animal.Location;
+import shadrin.dev.field.Location;
 import shadrin.dev.config.AnimalSpawner;
 import shadrin.dev.config.AnimalType;
 import shadrin.dev.config.EcosystemRules;
@@ -135,7 +135,7 @@ public class AnimalIslandRepairApplication {
             };
 
             Runnable statisticsTask = () -> {//поток для статистики
-                if (simulationConfig.getTickCount().get() % 2 == 0) {//сократил вывод статистика раз в 5 такстов
+                if (simulationConfig.getTickCount().get() % 2 == 0) {//сократил вывод статистики раз в 5 такстов
 
                     StatisticsCollector statisticsCollector = new StatisticsCollector();
                     Map<AnimalType, Integer> animalCounts = statisticsCollector.collectAnimalCounts(island);

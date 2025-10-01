@@ -1,7 +1,5 @@
 package shadrin.dev.field;
 
-import shadrin.dev.animal.Location;
-
 /**
  * создание матрицы острова, вводим координаты x(ширина),y(высота)
  */

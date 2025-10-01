@@ -1,4 +1,5 @@
-package shadrin.dev.animal;
+package shadrin.dev.field;
+import shadrin.dev.animal.Animal;
 import shadrin.dev.plant.Plants;
 
 import java.util.Set;
@@ -22,6 +23,10 @@ public class Location {
     }
 
     public Set<Plants> getPlants() {return plants;}
+
+    public void setWater(boolean water) {
+        isWater = water;
+    }
 
     public int getX() {
         return x;

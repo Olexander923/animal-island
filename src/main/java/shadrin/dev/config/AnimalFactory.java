@@ -149,7 +149,6 @@ public class AnimalFactory {
                     params.getDiet()
             );
 
-
             default -> throw new IllegalStateException("Unexpected value: " + type);
         };
 

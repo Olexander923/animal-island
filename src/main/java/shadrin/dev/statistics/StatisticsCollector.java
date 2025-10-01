@@ -1,7 +1,7 @@
 package shadrin.dev.statistics;
 
 import shadrin.dev.animal.Animal;
-import shadrin.dev.animal.Location;
+import shadrin.dev.field.Location;
 import shadrin.dev.config.AnimalType;
 import shadrin.dev.emoji.EmojiProvider;
 import shadrin.dev.field.Island;
