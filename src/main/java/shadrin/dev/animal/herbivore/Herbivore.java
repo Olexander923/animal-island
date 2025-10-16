@@ -1,19 +1,24 @@
 package shadrin.dev.animal.herbivore;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import shadrin.dev.animal.Animal;
 import shadrin.dev.animal.Eatable;
 import shadrin.dev.field.Location;
 import shadrin.dev.config.*;
 import shadrin.dev.field.Island;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
+
 import static java.lang.Math.min;
 
 public abstract class Herbivore extends Animal {
+    private static final Logger log = LogManager.getLogger(Herbivore.class);
     public Herbivore(SimulationConfig config, Island island, AnimalType type, double weight, int maxAnimalsPerCell, int speedMoving, double foodToSaturate, Set<Edible> diet) {
         super(config,island,type,weight, maxAnimalsPerCell, speedMoving, foodToSaturate, diet);
     }
@@ -35,8 +40,7 @@ public abstract class Herbivore extends Animal {
         //проходимся по всем кандидатам, пока не найдется подходящий
         for (Eatable candidate : candidates) {
             double chance = EcosystemRules.getProbabilityOfEating(this.getType(), candidate.getEdible());
-            //todo , временный вывод для проверки вероятности поедания,удалить потом
-            System.out.println("Chance for " + this.getType() + " to eat " + candidate.getEdible() + ": " + chance);
+            log.debug("Chance for " + this.getType() + " to eat " + candidate.getEdible() + ": " + chance);
             if (ThreadLocalRandom.current().nextDouble() < chance) {
                 //съедает
                 double foodWeight = candidate.getWeight();
@@ -62,12 +66,14 @@ public abstract class Herbivore extends Animal {
 
         long countOfPartners = getCurrentLocation().getAnimals().stream()
                 .filter(a -> a!=this && a.getType() == this.getType()).count();
-        if (countOfPartners > 1) return;
+        if (countOfPartners < 1) return;
 
         // проверяем есть ли еще место в клетке для новых детенышей
         AnimalParams config = SimulationConfig.getAnimalsMap().get(this.getType());
         int cubsQuantity = config.getCubsPerBirth();
-        if (currentLocation.getAnimals().size() + cubsQuantity > getMaxAnimalsPerCell()) {
+        int futureSize = currentLocation.getAnimals().size() + cubsQuantity;
+        if (futureSize > getMaxAnimalsPerCell()) {
+            log.debug(">>> exit: no place");
             return; //места нет в клетке
         }
         //теперь проверка сытости для размножения

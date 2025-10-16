@@ -1,8 +1,12 @@
 package shadrin.dev;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import shadrin.dev.animal.Animal;
+import shadrin.dev.emoji.EmojiProvider;
 import shadrin.dev.field.Location;
 import shadrin.dev.config.AnimalSpawner;
 import shadrin.dev.config.AnimalType;
@@ -11,6 +15,7 @@ import shadrin.dev.config.SimulationConfig;
 import shadrin.dev.field.Island;
 import shadrin.dev.plant.Plants;
 
+import shadrin.dev.reading_properties.Property;
 import shadrin.dev.statistics.StatisticsCollector;
 
 import java.io.*;
@@ -20,16 +25,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class AnimalIslandRepairApplication {
+    private static final Logger log = LogManager.getLogger(SimulationConfig.class);
 
     public static void main(String[] args) throws IOException {
+        log.info("Application starts...");
+        Property property = new Property();
         //todo убрать путь к файлу в проперти или отдельный конфиг
-        String filePath = "src/main/resources/parameter.yaml";
+        String filePath = property.parametersReader();
+        log.debug("Loading yaml configuration from: {}",filePath);
         DumperOptions options = new DumperOptions();
         options.setPrettyFlow(true);
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
@@ -39,6 +45,7 @@ public class AnimalIslandRepairApplication {
         Yaml yaml = new Yaml(options);
         try (InputStream is = new FileInputStream(filePath)) {
             Map<String, Object> data = yaml.load(is);
+            log.info("Config file loaded successfully");
             StringWriter writer = new StringWriter();
             yaml.dump(data, writer);
 
@@ -46,11 +53,12 @@ public class AnimalIslandRepairApplication {
             try (BufferedWriter bufferedWriter = Files.newBufferedWriter(Paths.get(filePath),
                     StandardCharsets.UTF_8)) {
                 bufferedWriter.write(writer.toString());
+                log.debug("Config file rewritten");
             } catch (IOException ex) {
-                ex.printStackTrace();
+                log.warn("Failed to rewrite config file, but continuing simulation", ex);
             }
 
-            Map<String, Object> root = yaml.load(Files.newInputStream(Path.of("src/main/resources/parameter.yaml")));
+            Map<String, Object> root = yaml.load(Files.newInputStream(Path.of(filePath)));
             Map<String, Object> islandYaml = (Map<String, Object>) root.get("island");
 
             int width = (Integer) islandYaml.get("width");
@@ -58,15 +66,19 @@ public class AnimalIslandRepairApplication {
             Duration cycle = Duration.ofMillis((Integer) islandYaml.get("cycleDurationOfSimulationMs"));
             boolean stop = (Boolean) islandYaml.get("stopConditions");
             int maxTicks = (Integer) islandYaml.get("maxTicks");
+            log.debug("Island configuration: {}х{}, max ticks: {}, cycle: {}ms",
+                    width,height,maxTicks,cycle.toMillis());
 
             //создаем конфиг для чтения параметров из yaml и инициализации и получения значений
             SimulationConfig simulationConfig = new SimulationConfig(width, height, cycle, stop, maxTicks);
-            simulationConfig.initializeAnimal(Path.of("src/main/resources/parameter.yaml"));
-            //simulationConfig.initializeAnimal(Files.newBufferedWriter(Paths.get("resources/parameter.yaml")));
+            log.info("Initializing config and get values...");
+            simulationConfig.initializeAnimal(Path.of(filePath));
 
             // инициализация правила экосистемы данными из конфига
             EcosystemRules.setProbabilityOfEating(simulationConfig.getProbabilityOfEating());
-
+            log.info("Plants config - max per cell: {}, initial: {}",
+                    simulationConfig.getMaxPlantsPerCell(),
+                    simulationConfig.getInitialCounts());
             System.out.println("Max plants per cell = " + simulationConfig.getMaxPlantsPerCell());
             System.out.println("Initial plants count = " + simulationConfig.getInitialCounts());
 
@@ -77,9 +89,16 @@ public class AnimalIslandRepairApplication {
             //создаем всех животных
             AnimalSpawner animalSpawner = new AnimalSpawner();
             animalSpawner.spawnInitial(island, simulationConfig);
+            log.info("Island created: {}х{}, animals spawned",island.getWIDTH(),island.getHEIGHT());
 
 
             ScheduledExecutorService executorService = Executors.newScheduledThreadPool(3);
+            ThreadPoolExecutor executor = (ThreadPoolExecutor) executorService;
+            log.info("pool size: {}, Active threads: {}, Queued tasks: {}, Completed tasks: {}",
+                    executor.getPoolSize(),
+                    executor.getActiveCount(),
+                    executor.getQueue().size(),
+                    executor.getCompletedTaskCount());
 
             Runnable taskPlants = () -> { //запуск потока для растений
                 Location[][] plantsLocation = island.getLocations();
@@ -91,7 +110,7 @@ public class AnimalIslandRepairApplication {
                             System.out.println("Called grow for location: " + x + ", " + y);
                         }
                         //дополнительное условие -
-                        // "естественную смерть растений"(2% умирает от текущего количества каждый такт)
+                        // естественную смерть растений(2% умирает от текущего количества каждый такт)
                         Location cell = plantsLocation[x][y];
                         Set<Plants> plants = cell.getPlants();
                         int plantsCount = plants.size();//получаем сколько растений в клетке
@@ -106,7 +125,6 @@ public class AnimalIslandRepairApplication {
                 }
             };
 
-
             Runnable animalTask = () -> {//запуск потока для животных
                 Location[][] animalsLocation = island.getLocations();
                 for (int x = 0; x < island.getWIDTH(); x++) {
@@ -115,7 +133,7 @@ public class AnimalIslandRepairApplication {
                         Set<Animal> animals = animalsLocation[x][y].getAnimals();
                         for (Animal animal : animals) {
                             animal.decreaseSatiety(); //уменьшаем сытость
-                            if (animal.getSatiety() <= 0){
+                            if (animal.getSatiety() <= 0) {
                                 animal.setAlive(false);
                                 continue; // переход к след. животному
                             }
@@ -128,7 +146,8 @@ public class AnimalIslandRepairApplication {
                         for (Animal deadAnimal : deadAnimals) {
                             deadAnimal.removeFrom(animalsLocation[x][y]);
                         }
-                        System.out.println("Animals starts eat,multiply etc");
+                        //System.out.println("Animals starts eat,multiply etc");
+                        log.debug("Processing animals on location [{}, {}]", x, y);
 
                     }
                 }
@@ -139,30 +158,71 @@ public class AnimalIslandRepairApplication {
 
                     StatisticsCollector statisticsCollector = new StatisticsCollector();
                     Map<AnimalType, Integer> animalCounts = statisticsCollector.collectAnimalCounts(island);
-                    System.out.println("Quantity of animals" + animalCounts);
+                    StringBuilder emojiStrings = new StringBuilder();
+                    for (AnimalType type : AnimalType.values()) {
+                        int count = animalCounts.get(type);
+                        String emoji = EmojiProvider.getEmoji(type);
+                        String resultString = emoji + " = " + count + ";";
+                        emojiStrings.append(resultString);
+                    }
+
+                    System.out.println("Quantity of animals" + emojiStrings);
 
                     int plantsCount = statisticsCollector.collectPlantsCounts(island);
-                    System.out.println("Quantity of plants" + plantsCount);
+                    System.out.println(EmojiProvider.getEmojiPlant() + " Quantity of plants " + plantsCount);
+                    log.info(EmojiProvider.getEmojiPlant() + " Quantity of plants " + plantsCount);
                 }
 
             };
-
+            log.info("Set delay between task in executor");
             executorService.scheduleAtFixedRate(taskPlants, 0, 10, TimeUnit.SECONDS);
             executorService.scheduleAtFixedRate(animalTask, 1, 5, TimeUnit.SECONDS);
             executorService.scheduleAtFixedRate(statisticsTask, 2, 5, TimeUnit.SECONDS);
 
-            //AtomicInteger tickCount = new AtomicInteger(0);//счетчик тактов
-            while (!EcosystemRules.conditionStopSimulation(island) ||
-                    simulationConfig.getTickCount().get() >= simulationConfig.getMaxTicks()) {
-                try {
-                    TimeUnit.SECONDS.sleep(1);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            try {
+                while (!EcosystemRules.conditionStopSimulation(island) &&
+                        simulationConfig.getTickCount().get() < simulationConfig.getMaxTicks()) {
+                    int currentTick = simulationConfig.getTickCount().incrementAndGet();
+                    log.debug("Starting simulation tick: {}", currentTick);
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        log.error("Main simulation thread interrupted,stopping simulation", e.getMessage());
+                        break;
+                    }
                 }
-                simulationConfig.getTickCount().incrementAndGet();
+                int finalTickCount = simulationConfig.getTickCount().get();
+                if (EcosystemRules.conditionStopSimulation(island)) {
+                    log.info("Simulation stopped: Animals died. Final tick: {}", finalTickCount);
+                } else if (finalTickCount >= simulationConfig.getMaxTicks()) {
+                    log.info("Simulation stopped: Maximum tick limit reached: {}", simulationConfig.getMaxTicks());
+                }
+
+                log.info("Shutting down executor service ...");
+                executorService.shutdown();
+
+                try {
+                    if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {//ждем завершения задач
+                        log.warn("Executor did not terminate in the specified times,forcing shutdown");
+                        executorService.shutdownNow();
+                        if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                            log.error("Executor did not terminate after shutdownNow.");
+                        }
+                    }
+
+                } catch (InterruptedException e) {
+                    log.error("Interrupted while waiting for executor termination", e);
+                    executorService.shutdownNow();
+                    Thread.currentThread().interrupt();
+                }
+                log.info("Application has shut down gracefully. Final tick: {}", finalTickCount);
+
+            } catch (Exception e) {
+                log.error("Unexpected error of simulation", e);
             }
-            executorService.shutdown();
         }
     }
-
 }
+
+

@@ -1,5 +1,8 @@
 package shadrin.dev.config;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import shadrin.dev.animal.carnivore.Carnivore;
 import shadrin.dev.field.Island;
 
 import java.util.Map;
@@ -8,6 +11,7 @@ import java.util.Map;
  * матрица вероятностей добычи
  */
 public class EcosystemRules {
+    private static final Logger log = LogManager.getLogger(EcosystemRules.class);
     private static Map<AnimalType,Map<Edible,Double>> probabilityOfEating;//матрица вероятности добычи в %,
     //заполняется из yaml
 
@@ -29,7 +33,7 @@ public class EcosystemRules {
      * @param type
      * @return
      */
-    public static int getCubsPerBirth(AnimalType type) {
+    public static int getCubsPerBirth(AnimalType type) {//todo проверить нужен или нет и убрать!
         return SimulationConfig.getAnimalsMap().get(type).getCubsPerBirth();
     }
 
@@ -40,10 +44,10 @@ public class EcosystemRules {
                 if (!island.getLocations()[x][y].getAnimals().isEmpty()){
                     return false;//животные еще есть, продолжается симуляция
                 }
-
             }
         }
-        return true;//все умерли, симулиция останавливается
+        log.info("все умерли, симулиция останавливается");
+        return true;
     }
 
     public static void setProbabilityOfEating(Map<AnimalType, Map<Edible, Double>> probabilityOfEating) {

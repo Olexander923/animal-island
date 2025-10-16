@@ -18,7 +18,6 @@ public abstract class Animal implements Eatable {
     private final double foodToSaturate;//Сколько килограммов пищи нужно животному для полного насыщения
     private final AnimalType type;
     protected final Set<Edible> diet;//хранит типы добычи для каждого животного
-    //protected Set<AnimalType> reproduction;
 
     private double satiety;//уровень насыщения животного(насколько голодный)
     private Location currentLocation;//местоположение текущее

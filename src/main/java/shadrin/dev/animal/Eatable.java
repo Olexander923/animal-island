@@ -1,7 +1,6 @@
 package shadrin.dev.animal;
 import shadrin.dev.config.Edible;
 import shadrin.dev.field.Location;
-
 /**
  * интерфейсдля удобства прохождения итерации по списку(вспомогательный для методов)
  */

@@ -160,7 +160,6 @@ class AnimalSpawnerTest {
                 Location location = island.getLocations()[x][y];
                 for (Animal animal : location.getAnimals()){
                     if (animal.getType() == AnimalType.WOLF) totalWolves++;
-
                     if (animal.getType() == AnimalType.FOX) totalFoxes++;
 
                 }

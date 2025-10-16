@@ -1,7 +1,10 @@
 package shadrin.dev.animal.carnivore;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import shadrin.dev.animal.Animal;
 import shadrin.dev.animal.Eatable;
+import shadrin.dev.animal.herbivore.Herbivore;
 import shadrin.dev.field.Location;
 import shadrin.dev.config.*;
 import shadrin.dev.field.Island;
@@ -14,6 +17,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import static java.lang.Math.min;
 
 public abstract class Carnivore extends Animal {
+    private static final Logger log = LogManager.getLogger(Carnivore.class);
     public Carnivore(SimulationConfig config, Island island, AnimalType type, double weight, int maxAnimalsPerCell, int speedMoving, double foodToSaturate, Set<Edible> diet) {
         super(config, island, type, weight, maxAnimalsPerCell, speedMoving, foodToSaturate, diet);
     }
@@ -33,8 +37,7 @@ public abstract class Carnivore extends Animal {
             //проходимся по всем кандидатам, пока не найдется подходящий
             for (Eatable candidate : candidates) {
                 double chance = EcosystemRules.getProbabilityOfEating(this.getType(), candidate.getEdible());
-                //todo , временный вывод для проверки вероятности поедания,удалить потом
-                System.out.println("Chance for " + this.getType() + " to eat " + candidate.getEdible() + ": " + chance);
+                log.debug("Chance for " + this.getType() + " to eat " + candidate.getEdible() + ": " + chance);
                 if (ThreadLocalRandom.current().nextDouble() < chance) {
                     //съедает
                     double foodWeight = candidate.getWeight();
@@ -70,12 +73,12 @@ public abstract class Carnivore extends Animal {
         int cubsQuantity = config.getCubsPerBirth();
         int futureSize = currentLocation.getAnimals().size() + cubsQuantity;
         if (futureSize > getMaxAnimalsPerCell()) {
-            System.out.println(">>> exit: no place");
+            log.debug(">>> exit: no place");
             return; //места нет в клетке
         }
         //теперь проверка сытости для размножения
         if (getSatiety() < 0.5 * getFoodToSaturate()) {
-            System.out.println(">>> exit: too hungry");
+            log.debug(">>> exit: too hungry");
             return;//слишком голодны для размножения
         }
         //создание детенышей

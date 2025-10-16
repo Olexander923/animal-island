@@ -1,6 +1,9 @@
 package shadrin.dev.config;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.yaml.snakeyaml.Yaml;
+import shadrin.dev.animal.carnivore.Carnivore;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class SimulationConfig {
+    private static final Logger log = LogManager.getLogger(SimulationConfig.class);
     private final  int islandWidth;//ширина острова
     private final  int islandHeight;//высота острова
     private final  Duration cycleDurationOfSimulationMs;//Длительность одного такта симуляции в миллисекундах.
@@ -46,14 +50,14 @@ public class SimulationConfig {
      * @param yamlPath путь к файлу с параметрами
      * @throws IOException
      */
-    public void initializeAnimal(Path yamlPath) throws IOException {//todo вызывается в main
+    public void initializeAnimal(Path yamlPath) throws IOException {
+        log.info("Starts yaml config parsing");
         //читаем YAML-конфиг, достаем значения параметров из мапы для каждого животног
-        // YAML-парсер библиотеки SnakeYAML
+        // YAML-парсер библиотеки snake
         Yaml yaml = new Yaml();
         Map<String, Object> root = yaml.load(Files.newInputStream(yamlPath));
-        //временный вовод для дебага
-        System.out.println("Root keys: " + root.keySet());
-        System.out.println("Root content: " + root);
+        log.debug("Root keys: " + root.keySet());
+        log.debug("Root content: " + root);
 
 
         this.maxPlantsPerCell = (Integer) root.getOrDefault("maxPlantsPerCell", 200);
@@ -108,12 +112,12 @@ public class SimulationConfig {
                     }
                     this.probabilityOfEating.put(animalType, edibleChances);
                 } catch (IllegalArgumentException e) {
-                    System.err.println("Unknown animal type in probability matrix: " + animalEntry.getKey());
+                    log.error("Unknown animal type in probability matrix: " + animalEntry.getKey());
                 }
             }
 
         } else {
-            System.err.println("Warning: probabilityOfEating section not found in YAML config!");
+            log.error("Warning: probabilityOfEating section not found in YAML config!");
             this.probabilityOfEating = new ConcurrentHashMap<>();
         }
         // инициализируем EcosystemRules после загрузки всех данных
@@ -128,16 +132,12 @@ public class SimulationConfig {
         return islandHeight;
     }
 
-    public Duration getCycleDurationOfSimulationMs() {
-        return cycleDurationOfSimulationMs;
-    }
-
 
     public int getMaxPlantsPerCell() {return maxPlantsPerCell;}
 
     public boolean isStopConditions() {
         return stopConditions;
-    }
+    } //todo еще раз проверить надобность метода
 
     public Map<AnimalType, Integer> getInitialCounts() {
         return initialCounts;

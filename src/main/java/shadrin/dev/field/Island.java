@@ -6,7 +6,7 @@ package shadrin.dev.field;
 public class Island {
     private final int WIDTH;
     private final int HEIGHT;
-    private final Location[][] locations;//TODO потом сделать как в условии 100х20
+    private final Location[][] locations;
 
     public Island(int WIDTH, int HEIGHT) {
         this.WIDTH = WIDTH;
